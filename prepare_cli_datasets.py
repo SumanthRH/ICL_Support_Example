@@ -28,8 +28,8 @@ def load_up_args(dataset_name):
     dataset_config = DatasetConfig(dataset_name)
     if dataset_name == "qnli":
         dataset_config.num_columns = 2
-        dataset_config.prompt_prepend1 = "Query: "
-        dataset_config.prompt_prepend2 = " Sentence: "
+        dataset_config.prompt_prepend1 = "Question: "
+        dataset_config.prompt_prepend2 = " Premise: "
         dataset_config.column1 = "question"
         dataset_config.column2 = "sentence"
         dataset_config.answer_column = "label"
@@ -71,13 +71,12 @@ def load_up_args(dataset_name):
     return dataset_config, is_glue
 
 def make_prompt_for_hf(example, dataset_config, single_column):
-    example["prompt"] = dataset_config.prompt_prepend1 + example[dataset_config.column1]
-    if example["prompt"][-1] != ".":
-        example["prompt"] += '.'
+    example["sentence"] = dataset_config.prompt_prepend1 + example[dataset_config.column1]
+    if example["sentence"][-1] != ".":
+        example["sentence"] += '.'
     if not single_column:
-        example["prompt"] += dataset_config.prompt_prepend2 + example[dataset_config.column2] + "\n"
-    example["prompt"] = example["prompt"].replace("\t", " ") # tab is our separator for csv
-    answer_column = dataset_config.answer_column
+        example["sentence"] += dataset_config.prompt_prepend2 + example[dataset_config.column2] + "\n"
+    example["sentence"] = example["sentence"].replace("\t", " ") # tab is our separator for csv
     return example
 
 
@@ -85,9 +84,11 @@ def make_prompt_for_hf(example, dataset_config, single_column):
 if __name__ == "__main__":
      
     dataset_name = "cola"
-    save_dir = f"full_train_data/{dataset_name}"
-    if not os.path.exists(save_dir):
-        os.mkdir(save_dir)
+    train_save_dir = f"full_train_data/{dataset_name}"
+    test_save_dir = f"test_data/{dataset_name}"
+    for dirc in [train_save_dir, test_save_dir]:
+        if not os.path.exists(dirc):
+            os.mkdir(dirc)
     dataset_name = dataset_name
     single_column = dataset_name in SINGLE_COLUMN_DATASETS
     dataset_config, is_glue = load_up_args(dataset_name)
@@ -104,11 +105,20 @@ if __name__ == "__main__":
     
     if len(dataset) > MAX_EXAMPLES:
         dataset = dataset.shuffle(seed=seed).select(range(MAX_EXAMPLES))
+
     
     mapper = partial(make_prompt_for_hf, dataset_config=dataset_config, single_column=single_column)
     dataset = dataset.map(mapper)
 
-    save_path = f"{save_dir}/train.csv"
-    dataset.select_columns(["prompt", "label"]).to_csv(save_path, sep="\t")
+    dataset = dataset.train_test_split(test_size=500, seed=seed)
+
+    train_save_path = f"{train_save_dir}/train.tsv"
+
+    dataset["train"].select_columns(["sentence", "label"]).to_csv(train_save_path, sep="\t")
+
+
+    save_path = f"{test_save_dir}/test.tsv"
+
+    dataset["test"].select_columns(["sentence", "label"]).to_csv(save_path, sep="\t")
 
     
