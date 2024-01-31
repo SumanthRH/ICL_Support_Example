@@ -51,6 +51,7 @@ full_data_dir_dict = {'SST-2': 'full_train_data/SST-2',
                       'agnews': 'full_train_data/agnews',
                       'amazon_b': 'full_train_data/amazon_b',
                       'dbpedia': 'full_train_data/dbpedia',
+                      "CoLA": "full_train_data/cola",
                       }
 
 
@@ -72,6 +73,8 @@ def load_data_by_fp(task, data_fp=None, split='train'):
             data_fp = '{}/train_30000.csv'.format(full_data_dir_dict['dbpedia'])
         elif task == 'amazon_b':
             data_fp = '{}/train_30000.csv'.format(full_data_dir_dict['amazon_b'])
+        elif task == 'CoLA':
+            data_fp = '{}/train.tsv'.format(full_data_dir_dict['CoLA'])
         else:
             raise NotImplementedError
 
@@ -142,13 +145,14 @@ def load_data_by_fp(task, data_fp=None, split='train'):
                                         ))
 
         if task == "CoLA":
-            data = [(sent, label) for _, label, _, sent in data]
+            data = [[sent, label] for sent, label, in data]
         elif task == "RTE":
             data = [(json.dumps({
                 "text": p, "question": h[:-1] if h.endswith(".") else h
             }), "1" if l == "entailment" else "0")
                 for _, p, h, l in data[1:]]
-        elif data[0] == ["sentence", "label"]:
+              
+        if data[0] == ["sentence", "label"]:
             data = data[1:]
     else:
         logger.info('{} does not exist.'.format(data_fp))

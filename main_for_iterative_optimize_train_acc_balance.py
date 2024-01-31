@@ -194,7 +194,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--test_at_which_iter', choices=['every_iter', 'last', 'first_last'], default='first_last')
     parser.add_argument('--batch_size', type=int, required=True)
-    parser.add_argument('--ptm_name', choices=['gpt2-large', 'gpt2-medium','EleutherAI/gpt-neo-1.3B'], required=True)
+    parser.add_argument('--ptm_name', choices=['gpt2-large', 'gpt2-medium','EleutherAI/gpt-neo-1.3B', "hf-internal-testing/tiny-random-gpt2"], required=True)
+    parser.add_argument('--task', type=str, required=True)
+    parser.add_argument('--method', type=str, required=True)
+    parser.add_argument('--template_idx', type=int, required=True)
 
     parser.add_argument('--direct_plus', type=int, required=True)
 
@@ -226,7 +229,7 @@ if __name__ == '__main__':
         args.output_dir = '{}/search_dir'.format(args.input_dir)
     os.makedirs(args.output_dir, exist_ok=True)
 
-    args.task = args.input_dir.split('/')[3]
+    # args.task = args.input_dir.split('/')[3]
 
     # if 'gpt'
 
@@ -235,15 +238,14 @@ if __name__ == '__main__':
     if not os.path.exists(task_test_fp):
         task_test_fp = 'test_data/{}/test.csv'.format(
             args.task)
-
+    
     test_examples = load_data_by_fp(args.task, task_test_fp)
-
-    args.template_idx = int(args.input_dir.split('/')[5].replace('template_', '').replace('tempalte_', ''))
+    # args.template_idx = int(args.input_dir.split('/')[5].replace('template_', '').replace('tempalte_', ''))
     assert args.template_idx >= 0 and args.template_idx <= 3, args.template_idx
 
     assert args.ptm_name.replace('/','_') == args.input_dir.split('/')[2], \
         'args.ptm_name={}, ptm_name in input_dir={}'.format(args.ptm_name, args.input_dir.split('/')[2])
-    args.method = args.input_dir.split('/')[4]
+    # args.method = args.input_dir.split('/')[4]
 
     assert args.verify_metric == 'acc'
 
