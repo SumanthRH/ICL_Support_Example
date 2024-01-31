@@ -8,7 +8,7 @@ for direct_plus in 0 1
 do
 for ptm_name in gpt2-large
 do
-
+batch_size=24 \
 task=SST-2 \
 template_idx=$template_idx \
 method=$method \

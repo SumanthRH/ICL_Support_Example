@@ -12,14 +12,16 @@ echo "candidate_example_num_total=$candidate_example_num_total"
 echo "candidate_example_num_every_label=$candidate_example_num_every_label"
 echo "direct_plus=$direct_plus"
 echo "diversity_score_scale=$diversity_score_scale"
+echo "batch_size=$batch_size"
 
+ptm_name_2=$(echo $ptm_name | sed 's/\//_/g')
+# if [ $ptm_name = "EleutherAI/gpt-neo-1.3B" ]
+# then
+#   ptm_name_2="EleutherAI_gpt-neo-1.3B"
+#   else
 
-if [ $ptm_name = "EleutherAI/gpt-neo-1.3B" ]
-then
-  ptm_name_2="EleutherAI_gpt-neo-1.3B"
-  else
-    ptm_name_2=$ptm_name
-fi
+#     ptm_name_2=$ptm_name
+# fi
 
 #for method in direct channel
 search_seed=100
@@ -49,7 +51,7 @@ python main_for_progressive_examples_selection.py \
 --train_seed 100 \
 --select_example_label_balance 1 \
 --template_idx $template_idx \
---batch_size 16 \
+--batch_size $batch_size \
 --select_metric $progressive_select_metric \
 --exp_tag $progressive_exp_tag \
 --mask_same_candidate_indication_pair 1
@@ -65,6 +67,9 @@ python main_for_iterative_optimize_train_acc_balance.py \
     --num_iteration 10 \
     --input_dir $input_dir \
     --seed $search_seed \
+    --task $task \
+    --method $method \
+    --template_idx $template_idx \
     --which_normalization std \
     --diversity_score_scale $diversity_score_scale \
     --label_balance $label_balance \
@@ -78,7 +83,7 @@ python main_for_iterative_optimize_train_acc_balance.py \
     --train_data_shuffle_and_select_indication_data_seed 100 \
     --verify_metric acc \
     --ptm_name $ptm_name \
-    --batch_size 32 \
+    --batch_size $batch_size \
     --shuffle_order_num_in_beam 2 \
     --initial_example_idxs searched_from_heuristic_score \
     --initial_example_idxs_repeat_limit 4
